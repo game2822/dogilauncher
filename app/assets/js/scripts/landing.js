@@ -130,7 +130,7 @@ function updateSelectedAccount(authUser){
             username = authUser.displayName
         }
         if(authUser.uuid != null){
-            document.getElementById('avatarContainer').style.backgroundImage = `url('https://mc-heads.net/body/${authUser.uuid}/right')`
+            document.getElementById('avatarContainer').style.backgroundImage = `url('https://crafatar.com/renders/head/$%7Baccounts[i].uuid%7D?scale=2&default=MHF_Steve&overlay')`
         }
     }
     user_text.innerHTML = username
@@ -218,20 +218,21 @@ const refreshMojangStatuses = async function(){
     document.getElementById('mojang_status_icon').style.color = MojangRestAPI.statusToHex(status)
 }
 
+//extrait de landing.js lignes 219 à 249
 const refreshServerStatus = async function(fade = false){
     loggerLanding.log('Refreshing Server Status')
     const serv = DistroManager.getDistribution().getServer(ConfigManager.getSelectedServer())
 
-    let pLabel = 'SERVER'
-    let pVal = 'OFFLINE'
+    let pLabel = 'SERVEUR'
+    let pVal = 'HORS-LIGNE'
 
     try {
         const serverURL = new URL('my://' + serv.getAddress())
-
-        const servStat = await getServerStatus(47, serverURL.hostname, Number(serverURL.port))
-        console.log(servStat)
-        pLabel = 'PLAYERS'
-        pVal = servStat.players.online + '/' + servStat.players.max
+        const servStat = await ServerStatus.getStatus(serverURL.hostname, serverURL.port)
+        if(servStat.online){
+            pLabel = 'JOUEURS'
+            pVal = servStat.onlinePlayers + '/' + servStat.maxPlayers
+        }
 
     } catch (err) {
         loggerLanding.warn('Unable to refresh server status, assuming offline.')
@@ -249,6 +250,7 @@ const refreshServerStatus = async function(fade = false){
     }
     
 }
+
 
 refreshMojangStatuses()
 // Server Status is refreshed in uibinder.js on distributionIndexDone.
@@ -862,10 +864,10 @@ let newsLoadingListener = null
  * 
  * @param {boolean} val True to set loading animation, otherwise false.
  */
-function setNewsLoading(val){
+ function setNewsLoading(val){
     if(val){
-        const nLStr = 'Checking for News'
-        let dotStr = '..'
+        const nLStr = 'Vérification des actualitées'
+        let dotStr = '...'
         nELoadSpan.innerHTML = nLStr + dotStr
         newsLoadingListener = setInterval(() => {
             if(dotStr.length >= 3){
